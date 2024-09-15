@@ -1,47 +1,47 @@
-# Securely Connecting Azure Container Apps to Azure OpenAI using User Managed Identity
+# Securely Connecting Azure Container Apps to Azure OpenAI Using User Managed Identity
 
 Today, I want to share two key points from the entry "Securely Connecting Azure Container Apps to Azure OpenAI using User Managed Identity":
 
-1. Deploying Java applications to Azure Container Apps without containerization
-2. Secure connection from Azure Container Apps to Azure OpenAI using User Managed Identity
+1. Deploying Java Applications to Azure Container Apps Without Containerization
+2. Secure Connection from Azure Container Apps to Azure OpenAI Using User Managed Identity
 
-## 1. Deploying Java applications to Azure Container Apps without Containerization
+## 1. Deploying Java Applications to Azure Container Apps Without Containerization
 
-On September 11, 2024, the announcement "[Announcing the General Availability of Java experiences on Azure Container Apps](https://techcommunity.microsoft.com/t5/apps-on-azure-blog/announcing-the-general-availability-of-java-experiences-on-azure/ba-p/4238294)" was made.
+On September 11, 2024, the announcement "[Announcing the General Availability of Java Experiences on Azure Container Apps](https://techcommunity.microsoft.com/t5/apps-on-azure-blog/announcing-the-general-availability-of-java-experiences-on-azure/ba-p/4238294)" was made.
 
-As detailed in the [Java on Azure Container Apps overview](https://learn.microsoft.com/azure/container-apps/java-overview), support for Java on Azure Container Apps has been enhanced. For example, Azure Container Apps now supports the following Spring components as a managed service:
+As detailed in the [Java on Azure Container Apps overview](https://learn.microsoft.com/azure/container-apps/java-overview), support for Java on Azure Container Apps has been enhanced. For example, Azure Container Apps now supports the following Spring components as managed services:
 
 * Eureka Server for Spring
 * Config Server for Spring
 * Admin for Spring
 
-Additionally, as explained in the [Quickstart: Launch your first Java application in Azure Container Apps](https://learn.microsoft.com/azure/container-apps/java-get-started?pivots=war), Azure Container Apps now offers a new feature called `Cloud Build Service`. This allows you to deploy applications directly to Azure Container Apps from Java artifacts like jar or war files. The service auto`matically creates and deploys container images from the specified Java artifacts, eliminating the need to manually write Dockerfile container definitions or handle container builds and pushes.
+Additionally, as explained in the [Quickstart: Launch Your First Java Application in Azure Container Apps](https://learn.microsoft.com/azure/container-apps/java-get-started?pivots=war), Azure Container Apps now offers a new feature called `Cloud Build Service`. This allows you to deploy applications directly to Azure Container Apps from Java artifacts like JAR or WAR files. The service automatically creates and deploys container images from the specified Java artifacts, eliminating the need to manually write Dockerfile container definitions or handle container builds and pushes.
 
 To achieve this with Azure Container Apps, you use the `az containerapp up` command and specify the Java artifact as an argument. Detailed steps are provided later in the guide (see: `2.8 Creating an Azure Container Apps Instance`).
 
-This significantly simplifies deploying Java applications to Azure Container Apps. Azure Container Apps can also scale the number of instances from zero as needed, making it a very convenient service. We encourage you to try it out.
+This significantly simplifies the deploying of Java applications to Azure Container Apps. Azure Container Apps can also scale the number of instances from zero as needed, making it a highly convenient service. We encourage you to try it.
 
-## 2. Securely Connecting Azure Container Apps to Azure OpenAI Using User-Managed Identity
+## 2. Securely Connecting Azure Container Apps to Azure OpenAI Using User Managed Identity
 
-In recent times, security measures have become increasingly important, and it is essential for businesses to build more secure systems. Microsoft recommends using Managed Identity for connections, instead of password-based access, when creating more secure environments like production environments. This approach leverages Microsoft Entra ID authentication.
+In recent times, security measures have become increasingly important, and it is essential for businesses to build more secure systems. Microsoft recommends using Managed Identity for connections instead of password-based access when creating secure environments, such as production environments. This approach utilizes the Microsoft Entra ID authentication.
 
-This method lets you grant specific permissions to resources within a defined scope, making security management more flexible. For more details on Managed Identity, refer to the article "[What are managed identities for Azure resources?](https://learn.microsoft.com/entra/identity/managed-identities-azure-resources/overview)". In this entry, I will clearly explain how to set up a User-Managed Identity, step-by-step.
+This method allows you to grant specific permissions for resources within a defined scope, making security management more flexible. For more details on Managed Identity, refer to the article "[What are Managed Identities for Azure Resources?](https://learn.microsoft.com/entra/identity/managed-identities-azure-resources/overview)". In this entry, I will clearly explain how to set up a User Managed Identity, step by step.
 
-Following these steps will help you understand how to configure it, and it can also serve as a reference when setting up other resources.
+Following these steps will help you understand how to configure it, and they can also serve as a reference for setting up other resources.
 
-### Steps to Set Up User-Managed Identity
+### Steps to Set Up User Managed Identity
 
-To connect Azure Container Apps to Azure OpenAI using a User-Managed Identity, follow these steps to set up the environment:
+To connect Azure Container Apps to Azure OpenAI using a User Managed Identity, follow these steps to set up the environment:
 
 1. Set Environment Variables
 2. Create a Resource Group
 3. Create an Azure OpenAI Instance (via Azure Portal)
-4. Create a User-Managed Identity
-5. Assign Roles to the User-Managed Identity for Azure OpenAI
+4. Create a User Managed Identity
+5. Assign Roles to the User Managed Identity for Azure OpenAI
 6. Create an Azure Container Apps Environment
 7. Develop a Spring Boot Web Application
 8. Create an Azure Container Apps Instance
-9. Assign the User-Managed Identity to Azure Container Apps
+9. Assign the User Managed Identity to Azure Container Apps
 10. Verify the Setup
 
 ### 2.1. Set Environment Variables
@@ -57,20 +57,20 @@ export USER_MANAGED_IDENTITY_NAME=yoshio-user-managed-id
 export SUBSCRIPTION=$(az account show --query id --output tsv)
 ```
 
-Below are the environment variable names and descriptions. If you want to change the names according to your environment, refer to the descriptions below to modify each resource name.
+Below are the environment variable names and their descriptions. If you need to change the names to suit your environment, please refer to the descriptions below to modify each resource name accordingly.
 
 | Environment Variable Name | Description |
 | ------------------------------- | ----------------------------------------- |
 | RESOURCE_GROUP| Name of the resource group to create|
 | LOCATION| Location where the environment will be set up |
-| USER\_MANAGED\_IDENTITY\_NAME| Name of the User-Managed Identity|
+| USER\_MANAGED\_IDENTITY\_NAME| Name of the User Managed Identity|
 | AZURE\_OPENAI\_NAME| Name of the Azure OpenAI|
 | OPENAI\_DEPLOY\_MODEL\_NAME| Name of the AI model to be deployed |
 | SUBSCRIPTION| Subscription ID to be used |
 
 ### 2.2. Create a Resource Group
 
-First, create a resource group in the Azure environment. Use `--location` to specify the Azure region where it will be created.
+First, create a resource group in the Azure environment. Use the `--location` argument to specify the Azure region where it will be created.
 
 ```azurecli
 az group create --name $RESOURCE_GROUP --location $LOCATION
@@ -78,13 +78,13 @@ az group create --name $RESOURCE_GROUP --location $LOCATION
 
 ### 2.3. Create an Azure OpenAI Instance (via Azure Portal)
 
-Next, create an Azure OpenAI instance. This instance MUST be created using the Azure Portal.
+Next, create an Azure OpenAI instance. This instance must be created using the Azure Portal.
 
-Search for `Azure OpenAI` in the Azure Portal. You will see the following screen:
+Search for `Azure OpenAI` in the Azure Portal, and you will see the following screen:
 
 ![Azure OpenAI1](./images/1-Azure-Portal-OpenAI.png)
 
-Click `Create`, and the following screen will appear. Press the `Create` button.
+Click `Create`, and the following screen will appear. Press the `Create` button again.
 
 ![Azure OpenAI1](./images/2-Azure-Portal-OpenAI.png)
 
@@ -92,7 +92,7 @@ After clicking `Create`, you'll see a screen where you need to set appropriate v
 
 ![Azure OpenAI1](./images/3-Azure-Portal-OpenAI.png)
 
-For now, we'll focus on setting up Managed Identity. Leave the network settings as default. You can configure a more secure network environment separately if needed.
+For now, we'll focus on setting up the Managed Identity. Leave the network settings as default. You can configure a more secure network environment separately, if needed.
 
 ![Azure OpenAI1](./images/4-Azure-Portal-OpenAI.png)
 
@@ -104,7 +104,7 @@ Once the instance is created, you'll see the following screen. Click the `Go to 
 
 ![Azure OpenAI1](./images/8-Azure-Portal-OpenAI.png)
 
-In the Azure OpenAI Studio, you'll see this screen. Click on `Deployments`.
+In the Azure OpenAI Studio, You will see the following screen. Click on `Deployments`.
 
 ![Azure OpenAI1](./images/9-Azure-AI-Studio.png)
 
@@ -124,7 +124,7 @@ Once the model is correctly deployed, you'll see a screen like this:
 
 ![Azure OpenAI1](./images/E-Azure-AI-Studio.png)
 
-This completes the creation of the Azure OpenAI instance via the Azure Portal. After creating the Azure OpenAI instance, assign the necessary information to environment variables for environment setup and Java program implementation.
+This completes the creation of the Azure OpenAI instance via the Azure Portal. After creating the Azure OpenAI instance, assign the necessary information to the environment variables for environment setup and Java program implementation.
 
 ```bash
 export OPEN_AI_RESOURCE_ID=$(az cognitiveservices account list \
@@ -151,8 +151,8 @@ Here, we are setting the following environment variables:
 | OPEN\_AI\_ACCESS\_KEY| Access key for OpenAI<br> (Needed for Java app development locally) |
 
 > Note:  
-> Azure OpenAI can be set up using Azure CLI as shown below.
-> However, as of September 2024, Java apps using Managed Identity did not work with Azure OpenAI environments created using the Azure CLI. Therefore, I recommend creating the Azure OpenAI instance using the Azure Portal instead of the Azure CLI.
+> You can set up Azure OpenAI using the Azure CLI, as demonstrated below.
+> However, as of September 2024, Java Applications utilizing Managed Identity did not work with Azure OpenAI environments created using the Azure CLI. Therefore, I recommend creating the Azure OpenAI instance using the Azure Portal instead.
 
 ```azurecli
 az cognitiveservices account create \
@@ -172,15 +172,15 @@ az cognitiveservices account deployment create \
   --sku-name "GlobalStandard"
 ```
 
-### 2.4. Create a User-Managed Identity
+### 2.4. Create a User Managed Identity
 
-Now that the Azure OpenAI instance is set up, the next step is to create a User-Managed Identity. Use the `az identity create` command:
+Now that the Azure OpenAI instance is set up, the next step is to create a User Managed Identity. Use the `az identity create` command.
 
 ```azurecli
 az identity create -g $RESOURCE_GROUP -n $USER_MANAGED_IDENTITY_NAME
 ```
 
-Once the User-Managed Identity is created, retrieve the necessary information for later command execution and Java program usage, and assign it to environment variables.
+Once the User Managed Identity is created, retrieve the necessary information for future command execution and Java program usage, and assign it to the environment variables.
 
 ```bash
 export USER_MANAGED_ID_CLIENT_ID=$(az identity list \
@@ -197,19 +197,19 @@ export USER_MANAGED_ID_RESOURCE_ID=$(az identity list \
                                         -o tsv)
 ```
 
-Here is an explanation of the meaning of each environment variable value and where they will be used:
+Below is an explanation of each environment variable's value and its usage:
 
 | Environment Variable Name| Description|
 | ------------------------------ | ------------------------------------------------------------- |
-| USER\_MANAGED\_ID\_CLIENT\_ID| Client ID of the User-Managed Identity<br> (Needed for Java app implementation) |
-| USER\_MANAGED\_ID\_PRINCIPAL\_ID| Principal ID of the User-Managed Identity<br> (Required for role assignment) |
-| USER\_MANAGED\_ID\_RESOURCE\_ID | Resource ID of the User-Managed Identity<br> (Needed for assigning ID to Container Apps) |
+| USER\_MANAGED\_ID\_CLIENT\_ID| Client ID of the User Managed Identity<br> (Needed for Java app implementation) |
+| USER\_MANAGED\_ID\_PRINCIPAL\_ID| Principal ID of the User Managed Identity<br> (Required for role assignment) |
+| USER\_MANAGED\_ID\_RESOURCE\_ID | Resource ID of the User Managed Identity<br> (Needed for assigning ID to Container Apps) |
 
-### 2.5. Assign Roles to User-Managed Identity for Azure OpenAI
+### 2.5. Assign Roles to User Managed Identity for Azure OpenAI
 
-Use the `az role assignment create` command to assign a role to the User-Managed Identity, allowing it to interact with the OpenAI resource with the `Cognitive Services OpenAI User` permission.
+Use the `az role assignment create` command to assign a role to the User Managed Identity, allowing it to interact with the OpenAI resource using the `Cognitive Services OpenAI User` permission.
 
-`$OPEN_AI_RESOURCE_ID` represents the OpenAI resource ID, and the role is assigned specifically to that resource. This method grants only the permissions needed for the app to work, enhancing security by avoiding unnecessary permissions.
+The `$OPEN_AI_RESOURCE_ID` represents the OpenAI resource ID, and the role is assigned specifically to that resource. This method grants only the necessary permissions for the app to run, enhancing security by avoiding unnecessary permissions.
 
 ```azurecli
 az role assignment create --assignee $USER_MANAGED_ID_PRINCIPAL_ID \
@@ -224,11 +224,11 @@ In addition to the roles mentioned, you can also assign the following roles.
 * Cognitive Services Contributor
 * Cognitive Services Usages Reader
 
-For detailed information about what each role can do, please refer to [Role-based access control for Azure OpenAI Service](https://learn.microsoft.com/azure/ai-services/openai/how-to/role-based-access-control).
+For detailed information about the capabilities of each role, please refer to the [Role-based Access Control for Azure OpenAI Service](https://learn.microsoft.com/azure/ai-services/openai/how-to/role-based-access-control).
 
 ### 2.6. Create an Azure Container Apps Environment
 
-Next, create an Azure Container Apps Environment. To do this with Azure CLI, you need to register additional extensions and providers. If you haven't run the following commands before, please execute them now.
+Next, create an Azure Container Apps Environment. To do this using the Azure CLI, you need to register additional extensions and providers. If you haven't executed the following commands before, please execute them now.
 
 ```azurecli
 az upgrade
@@ -238,7 +238,7 @@ az provider register --namespace Microsoft.App
 az provider register --namespace Microsoft.OperationalInsights
 ```
 
-Next, define the name of the Azure Container Apps Environment as an environment variable. Please choose a suitable name that fits your environment.
+Then, define the name of the Azure Container Apps Environment as an environment variable. Choose a name that suits your environment.
 
 ```bash
 export CONTAINER_ENVIRONMENT=YTContainerEnv3
@@ -255,11 +255,11 @@ az containerapp env create --name $CONTAINER_ENVIRONMENT \
 
 ### 2.7. Creating a Spring Boot Web Application
 
-With the Azure OpenAI and Azure Container Apps Environment set up, we will now create a Java project to implement a simple app that calls an OpenAI model from a Java application. We will use Spring Boot for this implementation.
+With the Azure OpenAI and Azure Container Apps Environment set up, we will now create a Java project to implement a simple app that invoke an OpenAI model from a Java Application. We will use the Spring Boot for this implementation.
 
 #### 2.7.1 Creating a Spring Boot Project
 
-Run the following command to create a Spring Boot project. After creating and downloading the project, unzip the archive to extract its contents.
+Execute the following command to create a Spring Boot project. After creating and downloading the project, unzip the archive to extract its contents.
 
 ```bash
 curl https://start.spring.io/starter.zip \
@@ -338,7 +338,7 @@ Add the following dependencies to the `pom.xml` file located in the root directo
 
 #### 2.7.3 Implementing a RESTful Endpoint (Main Part)
 
-Next, create an `AIChatController.java` file in the `src/main/java/com/yoshio3` directory. Implement the following code. This defines a RESTful endpoint that, upon receiving a request, queries OpenAI.
+Next, create an `AIChatController.java` file in the `src/main/java/com/yoshio3` directory. Implement the following code to define a RESTful endpoint that queries OpenAI upon receiving a request.
 
 ```java
 package com.yoshio3;
@@ -455,11 +455,11 @@ public class AIChatController {
 }
 ```
 
-Note that the `OpenAIClient` instance is described in two different ways. The currently active code uses `ManagedIdentityCredential` to connect to Azure OpenAI with User Managed Identity. This code only works when running in an Azure environment. It won't function in a local or non-Azure environment.
+Note that the `OpenAIClient` instance is described in two different ways. The current code uses `ManagedIdentityCredential` to connect to Azure OpenAI with a User Managed Identity. This code works only when running in an Azure environment and won't work in a local or non-Azure environment.
 
-During development, you need to test and verify functionality locally. In such cases, User Managed Identity cannot be used. Instead, connect using the OpenAI Access KEY by uncommenting the line with `AzureKeyCredential(openAIKey)` to create the OpenAIClient instance.
+During development, you need to test and verify functionality locally. In such cases, a User Managed Identity cannot be used. Instead, connect using the OpenAI Access Key by uncommenting the line with `AzureKeyCredential(openAIKey)` to create the OpenAIClient instance.
 
-Additionally, `slf4j` and `logback` are used for logging in the implementation. Configure them by creating a `logback-spring.xml` file in the `/src/main/resources` directory. While detailed logging configuration is not covered here, the original code is available on GitHub for reference if needed.
+Additionally, `SLF4J` and `Logback` are used for logging in the implementation. Configure them by creating a `logback-spring.xml` file in the `/src/main/resources` directory. While detailed logging configuration is not covered here, the original code is available on GitHub for reference if needed.
 
 Finally, here's a brief overview of the code: When a question or message is received from a user, it responds in a pirate tone as defined by `SYSTEM`. Enjoy the pirate-style replies!
 
@@ -487,7 +487,7 @@ With this, we have completed the minimal code necessary for operation verificati
 
 #### 2.7.5 Application Configuration
 
-Next, configure the settings to connect to Azure OpenAI. During the system setup from sections 2.1 to 2.6, all required information was stored in environment variables. Run the following command to retrieve the necessary information in the Java program.
+Next, configure the settings to connect to Azure OpenAI. During the systems setup from sections 2.1 to 2.6, all required information was stored in environment variables. Execute the following command to retrieve the necessary information in the Java program.
 
 ```bash
 echo "USER_MANAGED_ID_CLIENT_ID" : $USER_MANAGED_ID_CLIENT_ID
@@ -512,7 +512,7 @@ OPENAI_KEY=********************************
 
 #### 2.7.6 (Optional): Verifying Operation in a Local Environment
 
-If you want to verify if the Java program works locally, swap the comments in the `OpenAIClient` instance creation part of the `AIChatController` class code and run it.
+To verify if the Java program works locally, swap the comments in the `OpenAIClient` instance creation part of the `AIChatController` class code and run it.
 
 ```java
 // ManagedIdentityCredential credential = new ManagedIdentityCredentialBuilder().clientId(userManagedIDClientId).build();
@@ -522,13 +522,14 @@ If you want to verify if the Java program works locally, swap the comments in th
  OpenAIClient openAIClient = new OpenAIClientBuilder().endpoint(openAIEndpoint)
                    .credential(new AzureKeyCredential(openAIKey)).buildClient();
 ```
-After making the changes, execute the following command:
+
+After making the changes, execute the following command.
 
 ```bash
 mvn spring-boot:run
 ```
 
-If the Spring Boot application starts successfully, it will be listening on port 8080. Use the following curl command to verify if you can query Azure OpenAI:
+If the Spring Boot application starts successfully, it will be listening on port 8080. Use the following `curl` command to verify if you can query Azure OpenAI.
 
 ```bash
 curl -X POST http://localhost:8080/askAI \
@@ -554,7 +555,7 @@ After completing local verification, revert the changes to generate the `OpenAIC
 
 #### 2.7.7 Building the Application and Creating Artifacts
 
-Once the above steps are complete, build the application and create the artifacts.
+Once these steps are complete, build the application and create the artifacts.
 
 ```bash
 mvn clean package
@@ -578,7 +579,7 @@ drwxr-xr-x 3 teradayoshio wheel       96  9 14 20:34 test-classes
 
 ### 2.8. Creating an Azure Container Apps Instance
 
-Now that the implementation of the Java program is complete, let's deploy this Java application to Azure Container Apps.
+Now that the implementation of the Java program is complete, let's deploy this Java Application to Azure Container Apps.
 
 Specify the name for the container application using the environment variable `CONTAINER_APP_NAME`. Define the path and filename of the Spring Boot artifact with `JAR_FILE_PATH_AND_NAME`.
 
@@ -587,7 +588,7 @@ export CONTAINER_APP_NAME=yoshio-ai-app
 export JAR_FILE_PATH_AND_NAME=./target/Yoshio-AI-App-0.0.1-SNAPSHOT.jar
 ```
 
-As I explained in "[1. Deploying Java applications to Azure Container Apps without Containerization]()" you no longer need to create and deploy your own container image when deploying to Azure Container Apps. We only have the Java artifact `Yoshio-AI-App-0.0.1-SNAPSHOT.jar`, and we will deploy based on this.
+As explained in "[1. Deploying Java Applications to Azure Container Apps Without Containerization]()", you no longer need to create and deploy your own container image when deploying to Azure Container Apps. We only have the Java artifact `Yoshio-AI-App-0.0.1-SNAPSHOT.jar`, and we will deploy based on this.
 
 To do so, use the `az containerapp up` command. As you can see from the arguments, you only need to specify `--artifact $JAR_FILE_PATH_AND_NAME`, without any container image arguments. This command will automatically set up the build environment, build the container, and deploy it.
 
@@ -609,7 +610,7 @@ az containerapp up \
 
 > Note:  
 > You can slightly customize the container creation. Use the environment variables provided below as needed:
-> [Build environment variables for Java in Azure Container Apps](https://learn.microsoft.com/en-us/azure/container-apps/java-build-environment-variables)
+> [Build Environment Variables for Java in Azure Container Apps](https://learn.microsoft.com/en-us/azure/container-apps/java-build-environment-variables).
 
 ### 2.9. Assigning a User Managed Identity to Azure Container Apps
 
@@ -641,7 +642,7 @@ curl -X POST https://$REST_ENDPOINT/askAI \
      -d '{"message":"What is Spring Boot? please explain around 200 words?"}'
 ```
 
-Each time it is executed, the response may vary, but you can get results like those below. 
+Each time it is executed, the response may vary, but you can expect results like those below.
 
 ```text
 Arrr, Spring Boot be a powerful framework fer buildin' Java applications with minimal fuss, savvy? 
@@ -661,9 +662,8 @@ Aye, it be a boon to all developers, whether seasoned or green as a fresh landlu
 
 ## 3 Summary
 
-In this guide, we walked through a detailed, step-by-step process for securely connecting Azure Container Apps to Azure OpenAI using a User-Managed Identity. While setting up a User-Managed Identity might seem cumbersome at first, it offers the significant advantage of reusability. If your systems are few or flexibility isn't a major concern, a System-Managed Identity might be preferable. 
+In this guide, we walked through a detailed, step-by-step process for securely connecting Azure Container Apps to Azure OpenAI using a User Managed Identity. While setting up a User Managed Identity might seem cumbersome at first, it offers the significant advantage of reusability. If your systems are few or flexibility isn't a major concern, a System Managed Identity might be preferable.
 
-However, as the number of systems increases, User-Managed Identities become very handy.
-After creating a User-Managed Identity and assigning roles, you can reuse the same ID across various services like Azure App Service, Azure Functions, and Azure Kubernetes Services. The more systems or services you manage, the more beneficial this becomes.
+However, as the number of systems increases, User Managed Identities become very handy. After creating a User Managed Identity and assigning roles, you can reuse the same ID across various services like Azure App Service, Azure Functions, and Azure Kubernetes Services. The more systems or services you manage, the more beneficial this becomes.
 
-Please try using Managed Identities to build secure environments effectively.
+Please try using Managed Identities to effectively build secure environments.
