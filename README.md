@@ -660,6 +660,72 @@ In essence, Spring Boot be a trusty vessel fer any sea-farin' coder seekin' spee
 Aye, it be a boon to all developers, whether seasoned or green as a fresh landlubber!
 ```
 
+### 2.11. Reusing the Same User Managed Identity to Access Azure OpenAI from Other Azure Resources
+
+Previously, we discussed how to apply a `User Managed Identity` to `Azure Container Apps` to connect to `Azure OpenAI`. However, this User Managed Identity can also be reused by other services.
+
+In other words, applications deployed on other Azure resources can use the same User Managed Identity to connect to Azure OpenAI. 
+
+Some resources allow you to specify this identity during creation, while for others, you can assign it later.
+
+Below, we demonstrate how to assign a User Managed Identity to existing Azure resources, except for Azure Container Instances.
+
+#### For Azure VM
+
+To assign a User Managed Identity to an Azure VM, execute the following command:
+
+```azurecli
+az vm identity assign -g $RESOURCE_GROUP \
+                      -n $VM_NAME \
+                      --identities $USER_MANAGED_ID_RESOURCE_ID
+```
+
+#### For Azure App Service
+
+To assign a User Managed Identity to an Azure App Service, execute the following command:
+
+```azurecli
+az webapp identity assign -g $RESOURCE_GROUP \
+                          --name $APP_SERVICE_NAME \
+                          --identities $USER_MANAGED_ID_RESOURCE_ID
+```
+
+#### For Azure Functions
+
+To assign a User Managed Identity to Azure Functions, execute the following command:
+
+```azurecli
+az functionapp identity assign -g $RESOURCE_GROUP \
+                               -n $AZURE_FUNCTION_NAME \
+                               --identities $USER_MANAGED_ID_RESOURCE_ID
+```
+
+#### For Azure Container Instances
+
+For Azure Container Instances, you can assign a User Managed Identity during the instance creation:
+
+```azurecli
+az container create \
+                    --resource-group $RESOURCE_GROUP  \
+                    --name $CONTAINER_INSTANCE_NAME \
+                    --image $CONTAINER_IMAGE \
+                    --assign-identity $USER_MANAGED_ID_RESOURCE_ID 
+```
+
+By using a User Managed Identity, you can securely connect to target resources across different Azure services by reusing correctly configured access roles.
+
+#### For Azure Kubernetes Service
+
+To assign a User Managed Identity to Azure Kubernetes Service, execute the following command:
+
+```azurecli
+az aks update \
+                -g $RESOURCE_GROUP \
+                --name $AKS_CLUSTER_NAME \
+                --enable-managed-identity \
+                --assign-identity $USER_MANAGED_ID_RESOURCE_ID
+```
+
 ## 3 Summary
 
 In this guide, we walked through a detailed, step-by-step process for securely connecting Azure Container Apps to Azure OpenAI using a User Managed Identity. While setting up a User Managed Identity might seem cumbersome at first, it offers the significant advantage of reusability. If your systems are few or flexibility isn't a major concern, a System Managed Identity might be preferable.

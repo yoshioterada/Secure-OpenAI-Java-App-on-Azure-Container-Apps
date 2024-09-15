@@ -681,6 +681,70 @@ Spring Bootの一つの魅力は自動設定機能だ。これにより、依存
 海賊のように、自由自在にアプリを航海させてみるといいぜ！
 ```
 
+### 2.11. 同じ User Managed Identity を再利用して他の Azure リソースから Azure OpenAI にアクセス
+
+上記までは、Azure Container Apps に User Managed Identity を適用して、Azure OpenAI に接続する方法をご紹介しました。しかし、この User Managed Identity は他のサービスでも再利用できます。つまり、他の Azure のリソースにデプロイしたアプリケーションからも同じ User Managed Identity を利用して Azure OpenAI に接続することができます。
+
+各リソースの作成時に指定できるリソースもあれば、後からアサインする事もできます。
+
+下記は、Azure Container Instance 以外はすべて既存のリソースに対して User Managed Identity を後からアサインする方法を示しています。
+
+#### Azure VM の場合
+
+Azure VM に User Managed Identity をアサインする場合は、下記のコマンドを実行してください。
+
+```azurecli
+az vm identity assign -g $RESOURCE_GROUP \
+                      -n $VM_NAME \
+                      --identities $USER_MANAGED_ID_RESOURCE_ID
+```
+
+#### Azure App Service の場合
+
+Azure App Service に User Managed Identity をアサインする場合は、下記のコマンドを実行してください。
+
+```azurecli
+az webapp identity assign -g $RESOURCE_GROUP \
+                          --name $APP_SERVICE_NAME \
+                          --identities $USER_MANAGED_ID_RESOURCE_ID
+```
+
+#### Azure Functions の場合
+
+Azure Functions に User Managed Identity をアサインする場合は、下記のコマンドを実行してください。
+
+```azurecli
+az functionapp identity assign -g $RESOURCE_GROUP \
+                               -n $AZURE_FUNCTION_NAME \
+                               --identities $USER_MANAGED_ID_RESOURCE_ID
+```
+
+#### Azure Container Instances の場合
+
+Azure Container Instance はインスタンスの作成時に User Managed Identity をアサインすることができます。
+
+```azurecli
+az container create \
+                    --resource-group $RESOURCE_GROUP  \
+                    --name $CONTAINER_INSTANCE_NAME \
+                    --image $CONTAINER_IMAGE \
+                    --assign-identity $USER_MANAGED_ID_RESOURCE_ID 
+```
+
+#### Azure Kubernetes Service の場合
+
+Azure Kubernetes Service に User Managed Identity をアサインする場合は、下記のコマンドを実行してください。
+
+```azurecli
+az aks update \
+                -g $RESOURCE_GROUP \
+                --name $AKS_CLUSTER_NAME \
+                --enable-managed-identity \
+                --assign-identity $USER_MANAGED_ID_RESOURCE_ID
+```
+
+このように、User Managed Identity を利用すると、異なる Azure のリソース間で正しく設定したアクセル・ロール権限を再利用してセキュアに対象のリソースに接続ができるようになります。
+
 ### 3 まとめ
 
 今回は、非常に詳細にステップ・バイ・ステップでユーザ・マネージド ID を利用してセキュアに Azure Container Apps から Azure OpenAI に接続する方法をご紹介しました。
