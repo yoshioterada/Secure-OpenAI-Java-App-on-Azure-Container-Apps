@@ -726,6 +726,49 @@ az aks update \
 
 Like this, by using a User Managed Identity, you can securely connect to target resources across different Azure services by reusing correctly configured access roles.
 
+### 2.12. Comparing Access Keys and User Managed Identities from a Security Perspective
+
+This section explains the security differences between using Access Keys and User Managed Identities for Azure OpenAI.
+
+When using a User Managed Identity, you specify the `client ID` of the User Managed Identity when creating an instance of the `ManagedIdentityCredential` class in your Java Application. This `client ID` value is set as an environment variable `$USER_MANAGED_ID_CLIENT_ID` when the User Managed Identity is created.
+
+At first glance, it might seem that this is the only critical piece of information needed for the connection, aside from the endpoint URL.
+
+```java
+ManagedIdentityCredential credential =
+        new ManagedIdentityCredentialBuilder()
+                       .clientId(userManagedIDClientId)
+                        .build();
+OpenAIClient openAIClient = new OpenAIClientBuilder()
+                                        .credential(credential)
+                                        .endpoint(openAIEndpoint)
+                                        .buildClient();
+```
+
+Let's consider the impact of a leaked `client ID` versus a leaked `Access Key`.
+
+An `Access Key` is look like a regular password. If it is leaked, anyone who knows the password can access the resource. In the case of Azure OpenAI, this means anyone could use AI models like GPT-4. If the network is publicly accessible, the impact could be even greater.
+
+On the other hand, if the `client ID` is leaked, the impact is limited. This is because the `client ID` alone cannot connect to Azure OpenAI. To use a User Managed Identity, the service must be running on Azure. Even if Azure OpenAI is publicly accessible, you cannot connect from a local environment or over a network using a Java application.
+
+Additionally, the following role assignment is configured for the User Managed Identity:
+
+```azurecli
+az role assignment create --assignee $USER_MANAGED_ID_PRINCIPAL_ID \
+    --scope $OPEN_AI_RESOURCE_ID \
+    --role "Cognitive Services OpenAI User" 
+```
+
+This sets what actions can be performed using this user ID. Here, the `Cognitive Services OpenAI User` role is granted for Azure OpenAI services, limiting permissions to operations within Azure OpenAI.
+
+This means that even with this ID, you cannot perform administrative actions like adding models, not just across Azure but even within Azure OpenAI.
+
+Furthermore, to use this user ID, you must log in to Azure as an administrator, and only the resources specified by the administrator can be accessed within the scope of this ID's permissions.
+
+In summary, compared to the impact of a leaked access key, a leaked client ID requires multiple steps to exploit, making it more secure.
+
+For these reasons, User Managed Identities offer a more secure way to manage operations than access keys. We encourage you to use Managed Identities to build a secure environment.
+
 ## 3 Summary
 
 In this guide, we walked through a detailed, step-by-step process for securely connecting Azure Container Apps to Azure OpenAI using a User Managed Identity. While setting up a User Managed Identity might seem cumbersome at first, it offers the significant advantage of reusability. If your systems are few or flexibility isn't a major concern, a System Managed Identity might be preferable.
