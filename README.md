@@ -712,8 +712,6 @@ az container create \
                     --assign-identity $USER_MANAGED_ID_RESOURCE_ID 
 ```
 
-By using a User Managed Identity, you can securely connect to target resources across different Azure services by reusing correctly configured access roles.
-
 #### For Azure Kubernetes Service
 
 To assign a User Managed Identity to Azure Kubernetes Service, execute the following command:
@@ -725,6 +723,8 @@ az aks update \
                 --enable-managed-identity \
                 --assign-identity $USER_MANAGED_ID_RESOURCE_ID
 ```
+
+Like this, by using a User Managed Identity, you can securely connect to target resources across different Azure services by reusing correctly configured access roles.
 
 ## 3 Summary
 
