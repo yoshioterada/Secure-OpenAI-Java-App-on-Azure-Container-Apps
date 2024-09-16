@@ -19,11 +19,11 @@ Additionally, as explained in the [Quickstart: Launch Your First Java Applicatio
 
 To achieve this with Azure Container Apps, you use the `az containerapp up` command and specify the Java artifact as an argument. Detailed steps are provided later in the guide (see: `2.8 Creating an Azure Container Apps Instance`).
 
-This significantly simplifies the deploying of Java applications to Azure Container Apps. Azure Container Apps can also scale the number of instances from zero as needed, making it a highly convenient service. We encourage you to try it.
+This significantly simplifies deploying Java applications to Azure Container Apps. Azure Container Apps can also scale the number of instances from zero as needed, making it a highly convenient service. We encourage you to try it.
 
 ## 2. Securely Connecting Azure Container Apps to Azure OpenAI Using User Managed Identity
 
-In recent times, security measures have become increasingly important, and it is essential for businesses to build more secure systems. Microsoft recommends using Managed Identity for connections instead of password-based access when creating secure environments, such as production environments. This approach utilizes the Microsoft Entra ID authentication.
+In recent times, security measures have become increasingly important, and it is essential for businesses to build more secure systems. Microsoft recommends using Managed Identity for connections instead of password-based access when creating secure environments, such as production environments. This approach utilizes Microsoft Entra ID authentication.
 
 This method allows you to grant specific permissions for resources within a defined scope, making security management more flexible. For more details on Managed Identity, refer to the article "[What are Managed Identities for Azure Resources?](https://learn.microsoft.com/entra/identity/managed-identities-azure-resources/overview)". In this entry, I will clearly explain how to set up a User Managed Identity, step by step.
 
@@ -59,14 +59,14 @@ export SUBSCRIPTION=$(az account show --query id --output tsv)
 
 Below are the environment variable names and their descriptions. If you need to change the names to suit your environment, please refer to the descriptions below to modify each resource name accordingly.
 
-| Environment Variable Name | Description |
-| ------------------------------- | ----------------------------------------- |
-| RESOURCE_GROUP| Name of the resource group to create|
-| LOCATION| Location where the environment will be set up |
-| USER\_MANAGED\_IDENTITY\_NAME| Name of the User Managed Identity|
-| AZURE\_OPENAI\_NAME| Name of the Azure OpenAI|
-| OPENAI\_DEPLOY\_MODEL\_NAME| Name of the AI model to be deployed |
-| SUBSCRIPTION| Subscription ID to be used |
+| Environment Variable Name       | Description                                    |
+| ------------------------------- | ---------------------------------------------- |
+| RESOURCE_GROUP                  | Name of the resource group to create           |
+| LOCATION                        | Location where the environment will be set up  |
+| USER\_MANAGED\_IDENTITY\_NAME   | Name of the User Managed Identity              |
+| AZURE\_OPENAI\_NAME             | Name of the Azure OpenAI                       |
+| OPENAI\_DEPLOY\_MODEL\_NAME     | Name of the AI model to be deployed            |
+| SUBSCRIPTION                    | Subscription ID to be used                     |
 
 ### 2.2. Create a Resource Group
 
@@ -92,7 +92,7 @@ az cognitiveservices account create \
 
 > **Note:**  
 > It is crucial to specify `--custom-domain` when creating an Azure OpenAI instance.
-> If omitted, a `region endpoint` like `https://eastus2.api.cognitive.microsoft.com/` will be automatically generated. As outlined in "[Authenticate with Microsoft Entra ID](https://learn.microsoft.com/azure/ai-services/authentication#authenticate-with-microsoft-entra-id)", you cannot perform authentication using Microsoft Entra ID, in this case Managed Identity, without specifying this option.To enable Managed Identity authentication, need to specify `--custom-domain`.
+> If omitted, a `region endpoint` like `https://eastus2.api.cognitive.microsoft.com/` will be automatically generated. As outlined in "[Authenticate with Microsoft Entra ID](https://learn.microsoft.com/azure/ai-services/authentication#authenticate-with-microsoft-entra-id)", you cannot perform authentication using Microsoft Entra ID, in this case Managed Identity, without specifying this option. To enable Managed Identity authentication, you need to specify `--custom-domain`.
 
 Next, deploy the OpenAI model to your newly created Azure OpenAI instance using the `az cognitiveservices account deployment create` command. Here, specify the model name with `--model-name` and the model version with `--model-version`. You should also define the service capacity using `--sku-capacity` and select the service plan with `--sku-name`.
 
@@ -112,27 +112,27 @@ With this, the creation of the Azure OpenAI instance is complete. After creating
 
 ```bash
 export OPEN_AI_RESOURCE_ID=$(az cognitiveservices account list \
-                                -g $RESOURCE_GROUP \
-                                --query "[0].id" \
-                                --output tsv)
+                                    -g $RESOURCE_GROUP \
+                                    --query "[0].id" \
+                                    --output tsv)
 export OPEN_AI_ENDPOINT=$(az cognitiveservices account show \
-                                --resource-group $RESOURCE_GROUP \
-                                --name $AZURE_OPENAI_NAME \
-                                --query "properties.endpoint" \
-                                --output tsv)
+                                    -g $RESOURCE_GROUP \
+                                    --name $AZURE_OPENAI_NAME \
+                                    --query "properties.endpoint" \
+                                    --output tsv)
 export OPEN_AI_ACCESS_KEY=$(az cognitiveservices account keys list \
-                                --resource-group $RESOURCE_GROUP \
-                                --name $AZURE_OPENAI_NAME \
-                                --query key1 --output tsv)
+                                    -g $RESOURCE_GROUP \
+                                    --name $AZURE_OPENAI_NAME \
+                                    --query key1 --output tsv)
 ```
 
 Here, we are setting the following environment variables:
 
-| Environment Variable Name | Description |
-| ------------------------- | ----------------------------------------------------------- |
-| OPEN\_AI\_RESOURCE\_ID | Resource ID of OpenAI<br> (Needed for role assignment scope) |
-| OPEN\_AI\_ENDPOINT | Endpoint of OpenAI<br> (Required for Java app connection) |
-| OPEN\_AI\_ACCESS\_KEY| Access key for OpenAI<br> (Needed for Java app development locally) |
+| Environment Variable Name | Description                                                          |
+| ------------------------- | -------------------------------------------------------------------- |
+| OPEN\_AI\_RESOURCE\_ID    | Resource ID of OpenAI<br> (Needed for role assignment scope)         |
+| OPEN\_AI\_ENDPOINT        | Endpoint of OpenAI<br> (Required for Java app connection)            |
+| OPEN\_AI\_ACCESS_KEY      | Access key for OpenAI<br> (Needed for Java app development locally)  |
 
 ### 2.4. Create a User Managed Identity
 
@@ -146,26 +146,26 @@ Once the User Managed Identity is created, retrieve the necessary information fo
 
 ```bash
 export USER_MANAGED_ID_CLIENT_ID=$(az identity list \
-                                        -g $RESOURCE_GROUP \
-                                        --query "[0].clientId" \
-                                        -o tsv)
+                                            -g $RESOURCE_GROUP \
+                                            --query "[0].clientId" \
+                                            -o tsv)
 export USER_MANAGED_ID_PRINCIPAL_ID=$(az identity list \
-                                        -g $RESOURCE_GROUP \
-                                        --query "[0].principalId" \
-                                        -o tsv)
+                                            -g $RESOURCE_GROUP \
+                                            --query "[0].principalId" \
+                                            -o tsv)
 export USER_MANAGED_ID_RESOURCE_ID=$(az identity list \
-                                        -g $RESOURCE_GROUP \
-                                        --query "[0].id" \
-                                        -o tsv)
+                                            -g $RESOURCE_GROUP \
+                                            --query "[0].id" \
+                                            -o tsv)
 ```
 
 Below is an explanation of each environment variable's value and its usage:
 
-| Environment Variable Name| Description|
-| ------------------------------ | ------------------------------------------------------------- |
-| USER\_MANAGED\_ID\_CLIENT\_ID| Client ID of the User Managed Identity<br> (Needed for Java app implementation) |
-| USER\_MANAGED\_ID\_PRINCIPAL\_ID| Principal ID of the User Managed Identity<br> (Required for role assignment) |
-| USER\_MANAGED\_ID\_RESOURCE\_ID | Resource ID of the User Managed Identity<br> (Needed for assigning ID to Container Apps) |
+| Environment Variable Name          | Description                                                                      |
+| ---------------------------------- | -------------------------------------------------------------------------------- |
+| USER\_MANAGED\_ID\_CLIENT\_ID      | Client ID of the User Managed Identity<br> (Needed for Java app implementation)  |
+| USER\_MANAGED\_ID\_PRINCIPAL\_ID   | Principal ID of the User Managed Identity<br> (Required for role assignment)     |
+| USER\_MANAGED\_ID\_RESOURCE\_ID    | Resource ID of the User Managed Identity<br> (Needed for assigning ID to Container Apps) |
 
 ### 2.5. Assign Roles to User Managed Identity for Azure OpenAI
 
@@ -175,11 +175,11 @@ The `$OPEN_AI_RESOURCE_ID` represents the OpenAI resource ID, and the role is as
 
 ```azurecli
 az role assignment create --assignee $USER_MANAGED_ID_PRINCIPAL_ID \
-                          --scope $OPEN_AI_RESOURCE_ID \
-                          --role "Cognitive Services OpenAI User" 
+                              --scope $OPEN_AI_RESOURCE_ID \
+                              --role "Cognitive Services OpenAI User"
 ```
 
-In addition to the roles mentioned, you can also assign the following roles.
+In addition to the roles mentioned, you can also assign the following roles:
 
 * Cognitive Services OpenAI User
 * Cognitive Services OpenAI Contributor
@@ -210,14 +210,14 @@ Finally, run the `az containerapp env create` command to set up the environment.
 
 ```azurecli
 az containerapp env create --name $CONTAINER_ENVIRONMENT \
-                           --enable-workload-profiles \
-                           -g $RESOURCE_GROUP \
-                           --location $LOCATION
+                               --enable-workload-profiles \
+                               -g $RESOURCE_GROUP \
+                               --location $LOCATION
 ```
 
 ### 2.7. Creating a Spring Boot Web Application
 
-With the Azure OpenAI and Azure Container Apps Environment set up, we will now create a Java project to implement a simple app that invoke an OpenAI model from a Java Application. We will use the Spring Boot for this implementation.
+With the Azure OpenAI and Azure Container Apps Environment set up, we will now create a Java project to implement a simple app that invokes an OpenAI model from a Java Application. We will use Spring Boot for this implementation.
 
 #### 2.7.1 Creating a Spring Boot Project
 
@@ -268,34 +268,34 @@ The above command will generate a project with the following directory structure
 Add the following dependencies to the `pom.xml` file located in the root directory. This will include the necessary libraries for connecting to and authenticating with OpenAI.
 
 ```xml
-	<dependencies>
-       ......
-		<dependency>
-			<groupId>com.azure</groupId>
-			<artifactId>azure-ai-openai</artifactId>
-			<version>1.0.0-beta.11</version>
-		</dependency>
-       <dependency>
-			<groupId>com.azure</groupId>
-			<artifactId>azure-identity</artifactId>
-			<version>1.13.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>2.0.16</version>
-		</dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
-            <version>1.5.8</version>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.5.8</version>
-        </dependency>
-	</dependencies>
+<dependencies>
+    ......
+    <dependency>
+        <groupId>com.azure</groupId>
+        <artifactId>azure-ai-openai</artifactId>
+        <version>1.0.0-beta.11</version>
+    </dependency>
+    <dependency>
+        <groupId>com.azure</groupId>
+        <artifactId>azure-identity</artifactId>
+        <version>1.13.2</version>
+    </dependency>
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>2.0.16</version>
+    </dependency>
+    <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-core</artifactId>
+        <version>1.5.8</version>
+    </dependency>
+    <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>1.5.8</version>
+    </dependency>
+</dependencies>
 ```
 
 #### 2.7.3 Implementing a RESTful Endpoint (Main Part)
@@ -427,7 +427,7 @@ Finally, here's a brief overview of the code: When a question or message is rece
 
 #### 2.7.4 Defining the JSON Format for Endpoint Reception
 
-Next, define the JSON data format to be sent to this RESTful service. To process messages like `{"message":"What is the benefit of Spring Boot"}` in the HTTP request BODY, define the following class.
+Next, define the JSON data format to be sent to this RESTful service. To process messages like `{"message":"What is the benefit of Spring Boot"}` in the HTTP request body, define the following class.
 
 ```java
 package com.yoshio3;
@@ -469,7 +469,7 @@ OPENAI_ENDPOINT=https://********.openai.azure.com/
 OPENAI_KEY=********************************
 ```
 
-> Note:  
+> **Note:**  
 > `OPENAI_KEY` is the access key for OpenAI. Use it only during development in a development environment and avoid using it in a production environment.
 
 #### 2.7.6 (Optional): Verifying Operation in a Local Environment
@@ -482,7 +482,7 @@ To verify if the Java program works locally, swap the comments in the `OpenAICli
 //                    .endpoint(openAIEndpoint).buildClient();
 
  OpenAIClient openAIClient = new OpenAIClientBuilder().endpoint(openAIEndpoint)
-                   .credential(new AzureKeyCredential(openAIKey)).buildClient();
+                       .credential(new AzureKeyCredential(openAIKey)).buildClient();
 ```
 
 After making the changes, execute the following command.
@@ -570,7 +570,7 @@ az containerapp up \
   --query properties.configuration.ingress.fqdn
 ```
 
-> Note:  
+> **Note:**  
 > You can slightly customize the container creation. Use the environment variables provided below as needed:
 > [Build Environment Variables for Java in Azure Container Apps](https://learn.microsoft.com/en-us/azure/container-apps/java-build-environment-variables).
 
@@ -580,8 +580,8 @@ Having deployed the app to Azure Container Apps, the final step is to apply a Us
 
 ```azurecli
 az containerapp identity assign --name $CONTAINER_APP_NAME \
-                                --resource-group $RESOURCE_GROUP \
-                                --user-assigned $USER_MANAGED_ID_RESOURCE_ID
+                                    --resource-group $RESOURCE_GROUP \
+                                    --user-assigned $USER_MANAGED_ID_RESOURCE_ID
 ```
 
 With that, the User Managed Identity configuration is complete.
@@ -592,8 +592,8 @@ Now that all the settings are complete, let's verify the operation. First, obtai
 
 ```bash
 export REST_ENDPOINT=$(az containerapp show -n $CONTAINER_APP_NAME \
-          -g $RESOURCE_GROUP \
-          --query properties.configuration.ingress.fqdn --output tsv)
+              -g $RESOURCE_GROUP \
+              --query properties.configuration.ingress.fqdn --output tsv)
 ```
 
 Next, append the RESTful endpoint URL to the obtained host name and connect to it.
@@ -601,7 +601,7 @@ Next, append the RESTful endpoint URL to the obtained host name and connect to i
 ```bash
 curl -X POST https://$REST_ENDPOINT/askAI \
      -H "Content-Type: application/json" \
-     -d '{"message":"What is Spring Boot? please explain around 200 words?"}'
+     -d '{"message":"What is Spring Boot? Please explain around 200 words?"}'
 ```
 
 Each time it is executed, the response may vary, but you can expect results like those below.
@@ -626,7 +626,7 @@ Aye, it be a boon to all developers, whether seasoned or green as a fresh landlu
 
 Previously, we discussed how to apply a `User Managed Identity` to `Azure Container Apps` to connect to `Azure OpenAI`. However, this User Managed Identity can also be reused by other services.
 
-In other words, applications deployed on other Azure resources can use the same User Managed Identity to connect to Azure OpenAI. 
+In other words, applications deployed on other Azure resources can use the same User Managed Identity to connect to Azure OpenAI.
 
 Some resources allow you to specify this identity during creation, while for others, you can assign it later.
 
@@ -668,10 +668,10 @@ For Azure Container Instances, you can assign a User Managed Identity during the
 
 ```azurecli
 az container create \
-                    --resource-group $RESOURCE_GROUP  \
-                    --name $CONTAINER_INSTANCE_NAME \
-                    --image $CONTAINER_IMAGE \
-                    --assign-identity $USER_MANAGED_ID_RESOURCE_ID 
+                        --resource-group $RESOURCE_GROUP  \
+                        --name $CONTAINER_INSTANCE_NAME \
+                        --image $CONTAINER_IMAGE \
+                        --assign-identity $USER_MANAGED_ID_RESOURCE_ID
 ```
 
 #### For Azure Kubernetes Service
@@ -680,10 +680,10 @@ To assign a User Managed Identity to Azure Kubernetes Service, execute the follo
 
 ```azurecli
 az aks update \
-                -g $RESOURCE_GROUP \
-                --name $AKS_CLUSTER_NAME \
-                --enable-managed-identity \
-                --assign-identity $USER_MANAGED_ID_RESOURCE_ID
+                    -g $RESOURCE_GROUP \
+                    --name $AKS_CLUSTER_NAME \
+                    --enable-managed-identity \
+                    --assign-identity $USER_MANAGED_ID_RESOURCE_ID
 ```
 
 Like this, by using a User Managed Identity, you can securely connect to target resources across different Azure services by reusing correctly configured access roles.
@@ -709,7 +709,7 @@ OpenAIClient openAIClient = new OpenAIClientBuilder()
 
 Let's consider the impact of a leaked `client ID` versus a leaked `Access Key`.
 
-An `Access Key` is look like a regular password. If it is leaked, anyone who knows the password can access the resource. In the case of Azure OpenAI, this means anyone could use AI models like GPT-4. If the network is publicly accessible, the impact could be even greater.
+An `Access Key` is like a regular password. If it is leaked, anyone who knows the password can access the resource. In the case of Azure OpenAI, this means anyone could use AI models like GPT-4. If the network is publicly accessible, the impact could be even greater.
 
 On the other hand, if the `client ID` is leaked, the impact is limited. This is because the `client ID` alone cannot connect to Azure OpenAI. To use a User Managed Identity, the service must be running on Azure. Even if Azure OpenAI is publicly accessible, you cannot connect from a local environment or over a network using a Java application.
 
