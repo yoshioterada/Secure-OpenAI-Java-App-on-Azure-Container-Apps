@@ -41,7 +41,7 @@ Azure Container Apps でユーザ・マネージド ID を利用して Azure Ope
 
 1. 環境変数の設定
 2. リソース・グループの作成
-3. Azure OpenAI のインスタンスを作成 (Azure Portalから)
+3. Azure OpenAI のインスタンスを作成
 4. User Managed Identity の作成
 5. ユーザ・マネージド ID から Azure OpenAI に対するロール設定
 6. Azure Container Apps Environment の作成
@@ -83,7 +83,7 @@ export SUBSCRIPTION=$(az account show --query id --output tsv)
 az group create --name $RESOURCE_GROUP --location $LOCATION
 ```
 
-### 2.3. Azure OpenAI のインスタンスを作成 (Azure Portalから)
+### 2.3. Azure OpenAI のインスタンスを作成
 
 次に Azure OpenAI のインスタンスを作成します。作成する為には `az cognitiveservices account create` コマンドを実行します。ここでは、Azure OpenAI のインスタンスを作成する際に、`--kind OpenAI` と `--custom-domain` を指定しています。また、`--sku S0` でサービスのプランを指定し `--location` でリージョンを指定しています。
 

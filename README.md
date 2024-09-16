@@ -35,7 +35,7 @@ To connect Azure Container Apps to Azure OpenAI using a User Managed Identity, f
 
 1. Set Environment Variables
 2. Create a Resource Group
-3. Create an Azure OpenAI Instance (via Azure Portal)
+3. Create an Azure OpenAI Instance
 4. Create a User Managed Identity
 5. Assign Roles to the User Managed Identity for Azure OpenAI
 6. Create an Azure Container Apps Environment
@@ -76,7 +76,7 @@ First, create a resource group in the Azure environment. Use the `--location` ar
 az group create --name $RESOURCE_GROUP --location $LOCATION
 ```
 
-### 2.3. Create an Azure OpenAI Instance (via Azure Portal)
+### 2.3. Create an Azure OpenAI Instance
 
 Next, to create an Azure OpenAI instance, execute the `az cognitiveservices account create` command. When setting up the Azure OpenAI instance, specify `--kind OpenAI` and `--custom-domain`. Additionally, use `--sku S0` to select the service plan and `--location` to choose the region.
 
