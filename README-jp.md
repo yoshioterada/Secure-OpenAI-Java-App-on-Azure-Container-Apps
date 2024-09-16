@@ -43,7 +43,7 @@ Azure Container Apps でユーザ・マネージド ID を利用して Azure Ope
 2. リソース・グループの作成
 3. Azure OpenAI のインスタンスを作成 (Azure Portalから)
 4. User Managed Identity の作成
-5.   ユーザ・マネージド ID から Azure OpenAI に対するロール設定
+5. ユーザ・マネージド ID から Azure OpenAI に対するロール設定
 6. Azure Container Apps Environment の作成
 7. Spring Boot Web アプリケーションの作成
 8. Azure Container Apps インスタンスの作成
@@ -85,54 +85,36 @@ az group create --name $RESOURCE_GROUP --location $LOCATION
 
 ### 2.3. Azure OpenAI のインスタンスを作成 (Azure Portalから)
 
-次に、Azure OpenAI のインスタンスを作成します。このインスタンスは `必ず` Azure Portal 上で作成をして下さい。
+次に Azure OpenAI のインスタンスを作成します。作成する為には `az cognitiveservices account create` コマンドを実行します。ここでは、Azure OpenAI のインスタンスを作成する際に、`--kind OpenAI` と `--custom-domain` を指定しています。また、`--sku S0` でサービスのプランを指定し `--location` でリージョンを指定しています。
 
-Azure Portal から `Azure OpenAI` を検索して探します。すると下記が表示されます。
+```azurecli
+az cognitiveservices account create \
+  --name $AZURE_OPENAI_NAME \
+  --resource-group $RESOURCE_GROUP \
+  --kind OpenAI \
+  --custom-domain $AZURE_OPENAI_NAME \
+  --sku S0 \
+  --location $LOCATION
+```
 
-![Azure OpenAI1](./images/1-Azure-Portal-OpenAI.png)
+> 注意:  
+> ここでご注意していただきたいのは、Azure OpenAI のインスタンスを作成する際に、`--custom-domain` を指定している点です。[Authenticate with Microsoft Entra ID](https://learn.microsoft.com/azure/ai-services/authentication#authenticate-with-microsoft-entra-id) に記載されているように、こちらの引数を指定しなければ、`https://eastus2.api.cognitive.microsoft.com/` のようなリージョン・エンドポイントが自動生成されます。そこで Microsoft Entra ID を使用した認証、つまり Managed Identity を使用した認証を行う事ができません。Managed Identity を使用する認証を行うためには必ず、`--custom-domain` を指定してください。
 
-`Create` をクリックすると、下記の画面が表示されます。`Create` ボタンを押して下さい。
+次に、作成した Azure OpenAI のインスタンスに対して、OpenAI のモデルをデプロイします。ここでは、`az cognitiveservices account deployment create` コマンドを実行して、OpenAI のモデルをデプロイしています。ここでは、`--model-name` でモデル名を指定し、`--model-version` でモデルのバージョンを指定しています。また、`--sku-capacity` でサービスのキャパシティを指定し、`--sku-name` でサービスのプランを指定しています。
 
-![Azure OpenAI1](./images/2-Azure-Portal-OpenAI.png)
+```azurecli
+az cognitiveservices account deployment create \
+  --name $AZURE_OPENAI_NAME \
+  --resource-group  $RESOURCE_GROUP \
+  --deployment-name $OPENAI_DEPLOY_MODEL_NAME \
+  --model-name $OPENAI_DEPLOY_MODEL_NAME \
+  --model-version "2024-08-06"  \
+  --model-format OpenAI \
+  --sku-capacity "20" \
+  --sku-name "GlobalStandard"
+```
 
-`Create` ボタンを押すと下記の画面が表示されます。ここで、`リソース・グループ`、`リージョン`、`名前`、`Price Tier` など、それぞれを適切な値で設定します。
-
-![Azure OpenAI1](./images/3-Azure-Portal-OpenAI.png)
-
-今回は Managed Identity の設定を優先で行いますので、ネットワークはデフォルトのままで設定を行います。
-よりセキュアなネットワーク環境を構築したい場合は別途設定を行うことができます。
-
-![Azure OpenAI1](./images/4-Azure-Portal-OpenAI.png)
-
-最後に設定内容を確認し、インスタンスを作成します。
-
-![Azure OpenAI1](./images/6-Azure-Portal-OpenAI.png)
-
-インスタンスの作成が完了すると下記の画面が表示されます。ここで `Go to Azure OpenAI Studio` のボタンを押して下さい。
-
-![Azure OpenAI1](./images/8-Azure-Portal-OpenAI.png)
-
-Azure OpenAI Studio の画面に移動すると下記の画面が表示されます。ここで `Deployments` を押します。
-
-![Azure OpenAI1](./images/9-Azure-AI-Studio.png)
-
-`Deployments` を押すと下記の画面が表示されます。ここで `+ Deploy Model` ボタンから `Deploy base model` を選択します。
-
-![Azure OpenAI1](./images/B-Azure-AI-Studio.png)
-
-すると下記の画面が表示され、AI のモデルを選択する画面が表示されます。ここでは `gpt-4o` を選択します。
-
-![Azure OpenAI1](./images/C-Azure-AI-Studio.png)
-
-モデルを選択するとデプロイするために必要な情報の入力が求められますので環境に応じて必要な設定を行い、最後に `Deploy` ボタンを押します。
-
-![Azure OpenAI1](./images/D-Azure-AI-Studio.png)
-
-正しく、モデルがデプロイされたら下記のような画面が表示されます。
-
-![Azure OpenAI1](./images/E-Azure-AI-Studio.png)
-
-以上で、Azure Portal から Azure OpenAI のインスタンスの完了です。Azure OpenAI のインスタンスが作成できた後、環境構築や Java プログラムの実装で必要な情報を環境変数に代入しておきます。
+以上で、Azure OpenAI のインスタンス作成が完了です。Azure OpenAI のインスタンスを作成した後、Java プログラムの実装で必要な情報や、アクセス権限の設定を行う際に必要になる情報を環境変数に代入しておきます。
 
 ```bash
 export OPEN_AI_RESOURCE_ID=$(az cognitiveservices account list \
@@ -157,29 +139,6 @@ export OPEN_AI_ACCESS_KEY=$(az cognitiveservices account keys list \
 | OPEN\_AI\_RESOURCE\_ID | OpenAI のリソースID<br> (ロール設定の適用範囲のスコープで必要) |
 | OPEN\_AI\_ENDPOINT | OpenAI のエンドポイント<br> (Java アプリで接続する際に必要) |
 | OPEN\_AI\_ACCESS\_KEY | OpenAI のアクセスキー<br> (ローカル環境での Java アプリ開発時に必要) |
-
-
-> 注意：  
-> Azure OpenAI は下記のように Azure CLI を利用して環境を構築する事ができます。  
-> しかし、2024 年 9 月時点で、下記の Azure CLI を利用して Azure OpenAI の環境を作成した場合、その環境に対して Managed Identity を利用した Java アプリが動作しませんでした。そこで、今回は Azure CLI を利用せず Azure Portal を利用した Azure OpenAI のインスタンス作成をお勧めします。
-
-```azurecli
-az cognitiveservices account create \
-  --name $AZURE_OPENAI_NAME \
-  --resource-group $RESOURCE_GROUP \
-  --kind OpenAI \
-  --sku S0 \
-  --location $LOCATION
-az cognitiveservices account deployment create \
-  --name $AZURE_OPENAI_NAME \
-  --resource-group  $RESOURCE_GROUP \
-  --deployment-name $OPENAI_DEPLOY_MODEL_NAME \
-  --model-name $OPENAI_DEPLOY_MODEL_NAME \
-  --model-version "2024-08-06"  \
-  --model-format OpenAI \
-  --sku-capacity "20" \
-  --sku-name "GlobalStandard"
-```
 
 ### 2.4. User Managed Identity の作成
 
@@ -787,7 +746,7 @@ az role assignment create --assignee $USER_MANAGED_ID_PRINCIPAL_ID \
 つまり、アクセス・キーが漏洩する影響に比べて、クライアント ID が漏洩した場合、サービスを利用するために多段のプロセスが必要で容易には出来ないようになっています。
 
 こうした理由から、ユーザ・マネージド ID はアクセス・キーよりもセキュアに運用管理ができるようになります。
-ぜひ、マネージド ID をご活用しセキュアな環境を構築して下さい。
+ぜひ、マネージド ID をご活用してセキュアな環境を構築して下さい。
 
 ### 3 まとめ
 

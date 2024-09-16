@@ -78,53 +78,37 @@ az group create --name $RESOURCE_GROUP --location $LOCATION
 
 ### 2.3. Create an Azure OpenAI Instance (via Azure Portal)
 
-Next, create an Azure OpenAI instance. This instance must be created using the Azure Portal.
+Next, to create an Azure OpenAI instance, execute the `az cognitiveservices account create` command. When setting up the Azure OpenAI instance, specify `--kind OpenAI` and `--custom-domain`. Additionally, use `--sku S0` to select the service plan and `--location` to choose the region.
 
-Search for `Azure OpenAI` in the Azure Portal, and you will see the following screen:
+```azurecli
+az cognitiveservices account create \
+  --name $AZURE_OPENAI_NAME \
+  --resource-group $RESOURCE_GROUP \
+  --kind OpenAI \
+  --custom-domain $AZURE_OPENAI_NAME \
+  --sku S0 \
+  --location $LOCATION
+```
 
-![Azure OpenAI1](./images/1-Azure-Portal-OpenAI.png)
+> **Note:**  
+> It is crucial to specify `--custom-domain` when creating an Azure OpenAI instance.
+> If omitted, a `region endpoint` like `https://eastus2.api.cognitive.microsoft.com/` will be automatically generated. As outlined in "[Authenticate with Microsoft Entra ID](https://learn.microsoft.com/azure/ai-services/authentication#authenticate-with-microsoft-entra-id)", you cannot perform authentication using Microsoft Entra ID, in this case Managed Identity, without specifying this option.To enable Managed Identity authentication, need to specify `--custom-domain`.
 
-Click `Create`, and the following screen will appear. Press the `Create` button again.
+Next, deploy the OpenAI model to your newly created Azure OpenAI instance using the `az cognitiveservices account deployment create` command. Here, specify the model name with `--model-name` and the model version with `--model-version`. You should also define the service capacity using `--sku-capacity` and select the service plan with `--sku-name`.
 
-![Azure OpenAI1](./images/2-Azure-Portal-OpenAI.png)
+```azurecli
+az cognitiveservices account deployment create \
+  --name $AZURE_OPENAI_NAME \
+  --resource-group  $RESOURCE_GROUP \
+  --deployment-name $OPENAI_DEPLOY_MODEL_NAME \
+  --model-name $OPENAI_DEPLOY_MODEL_NAME \
+  --model-version "2024-08-06"  \
+  --model-format OpenAI \
+  --sku-capacity "20" \
+  --sku-name "GlobalStandard"
+```
 
-After clicking `Create`, you'll see a screen where you need to set appropriate values for `Resource Group`, `Region`, `Name`, `Price Tier`, etc.
-
-![Azure OpenAI1](./images/3-Azure-Portal-OpenAI.png)
-
-For now, we'll focus on setting up the Managed Identity. Leave the network settings as default. You can configure a more secure network environment separately, if needed.
-
-![Azure OpenAI1](./images/4-Azure-Portal-OpenAI.png)
-
-Finally, review your settings and create the instance.
-
-![Azure OpenAI1](./images/6-Azure-Portal-OpenAI.png)
-
-Once the instance is created, you'll see the following screen. Click the `Go to Azure OpenAI Studio` button.
-
-![Azure OpenAI1](./images/8-Azure-Portal-OpenAI.png)
-
-In the Azure OpenAI Studio, You will see the following screen. Click on `Deployments`.
-
-![Azure OpenAI1](./images/9-Azure-AI-Studio.png)
-
-Clicking `Deployments` will display the following screen. From here, select `Deploy base model` by clicking the `+ Deploy Model` button.
-
-![Azure OpenAI1](./images/B-Azure-AI-Studio.png)
-
-You'll see a screen to select the AI model. Choose `gpt-4o` here.
-
-![Azure OpenAI1](./images/C-Azure-AI-Studio.png)
-
-After selecting the model, you'll need to input the necessary information for deployment. Adjust the settings as needed for your environment, and finally, click the `Deploy` button.
-
-![Azure OpenAI1](./images/D-Azure-AI-Studio.png)
-
-Once the model is correctly deployed, you'll see a screen like this:
-
-![Azure OpenAI1](./images/E-Azure-AI-Studio.png)
-
-This completes the creation of the Azure OpenAI instance via the Azure Portal. After creating the Azure OpenAI instance, assign the necessary information to the environment variables for environment setup and Java program implementation.
+With this, the creation of the Azure OpenAI instance is complete. After creating the instance, store the necessary information for your Java program implementation and other operations in environment variables.
 
 ```bash
 export OPEN_AI_RESOURCE_ID=$(az cognitiveservices account list \
