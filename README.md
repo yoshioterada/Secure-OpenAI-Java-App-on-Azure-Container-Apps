@@ -78,7 +78,7 @@ az group create --name $RESOURCE_GROUP --location $LOCATION
 
 ### 2.3. Create an Azure OpenAI Instance
 
-Next, to create an Azure OpenAI instance, execute the `az cognitiveservices account create` command. When setting up the Azure OpenAI instance, specify `--kind OpenAI` and `--custom-domain`. Additionally, use `--sku S0` to select the service plan and `--location` to choose the region.
+Next, create an Azure OpenAI instance by running the `az cognitiveservices account create` command. In this step, specify `--kind OpenAI` and `--custom-domain` for the instance.
 
 ```azurecli
 az cognitiveservices account create \
