@@ -134,28 +134,6 @@ Here, we are setting the following environment variables:
 | OPEN\_AI\_ENDPOINT | Endpoint of OpenAI<br> (Required for Java app connection) |
 | OPEN\_AI\_ACCESS\_KEY| Access key for OpenAI<br> (Needed for Java app development locally) |
 
-> Note:  
-> You can set up Azure OpenAI using the Azure CLI, as demonstrated below.
-> However, as of September 2024, Java Applications utilizing Managed Identity did not work with Azure OpenAI environments created using the Azure CLI. Therefore, I recommend creating the Azure OpenAI instance using the Azure Portal instead.
-
-```azurecli
-az cognitiveservices account create \
-  --name $AZURE_OPENAI_NAME \
-  --resource-group $RESOURCE_GROUP \
-  --kind OpenAI \
-  --sku S0 \
-  --location $LOCATION
-az cognitiveservices account deployment create \
-  --name $AZURE_OPENAI_NAME \
-  --resource-group  $RESOURCE_GROUP \
-  --deployment-name $OPENAI_DEPLOY_MODEL_NAME \
-  --model-name $OPENAI_DEPLOY_MODEL_NAME \
-  --model-version "2024-08-06"  \
-  --model-format OpenAI \
-  --sku-capacity "20" \
-  --sku-name "GlobalStandard"
-```
-
 ### 2.4. Create a User Managed Identity
 
 Now that the Azure OpenAI instance is set up, the next step is to create a User Managed Identity. Use the `az identity create` command.
